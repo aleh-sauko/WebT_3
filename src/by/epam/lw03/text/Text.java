@@ -16,7 +16,7 @@ public class Text {
 
     public void printText() {
         for (PartOfText part : partsOfText) {
-            System.out.print(part  + " ");
+            System.out.print(part);
         }
         System.out.println();
     }

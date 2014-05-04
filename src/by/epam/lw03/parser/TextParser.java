@@ -5,12 +5,14 @@ import by.epam.lw03.text.SentenceComparator;
 import by.epam.lw03.text.sentence.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Properties;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +23,17 @@ import java.util.regex.Pattern;
 public class TextParser {
 
     private TextParser() {}
+    private static Properties regexp = new Properties();
+
+    static {
+        FileInputStream fis;
+        try {
+            fis = new FileInputStream("src/by/epam/lw03/resources/regexp.properties");
+            regexp.load(fis);
+        } catch (IOException e) {
+            System.err.println("ОШИБКА: Файл свойств отсуствует!");
+        }
+    }
 
     public static Collection<PartOfText> parseText(File f) throws IOException {
         return parseText(readFile(f.getAbsolutePath(), Charset.forName("UTF-8")));
@@ -30,9 +43,8 @@ public class TextParser {
 
         Collection<PartOfText> partsOfText = new TreeSet<PartOfText>(new SentenceComparator());
 
-        Pattern pattern = Pattern.compile("([^.!?]+[.!?])");
+        Pattern pattern = Pattern.compile(regexp.getProperty("textRegexp"));
         Matcher matcher = pattern.matcher(text);
-        int i = 0;
         while (matcher.find()) {
             String match = matcher.group();
             Sentence sentence = new Sentence(matcher.start(), parseSentence(match));
@@ -48,7 +60,7 @@ public class TextParser {
 
         Collection<PartOfSentence> parts = new TreeSet<PartOfSentence>();
 
-        Pattern codePattern = Pattern.compile("(\\{[^}]+})");
+        Pattern codePattern = Pattern.compile(regexp.getProperty("codeRegexp"));
         Matcher codeMatcher = codePattern.matcher(sentence);
         while (codeMatcher.find()) {
             if (codeMatcher.group(1) != null) {
@@ -57,7 +69,7 @@ public class TextParser {
             }
         }
 
-        Pattern wordPattern = Pattern.compile("(\\w+)|(\\W+)");
+        Pattern wordPattern = Pattern.compile(regexp.getProperty("wordRegexp"));
         Matcher wordMatcher = wordPattern.matcher(sentence);
         while (wordMatcher.find()) {
             if (wordMatcher.group(1) != null) {
