@@ -3,6 +3,7 @@ package by.epam.lw03.parser;
 import by.epam.lw03.text.PartOfText;
 import by.epam.lw03.text.SentenceComparator;
 import by.epam.lw03.text.sentence.*;
+import com.sun.xml.internal.ws.api.ha.StickyFeature;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,18 +24,15 @@ import java.util.regex.Pattern;
  */
 public class TextParser {
 
-    private TextParser() {}
-    private static Properties regexp = new Properties();
+    private static final String PATH_TO_RESOURCE = "resources.regexp";
+    private static final String TEXT_REGEXP = "textRegexp";
+    private static final String CODE_REGEXP = "codeRegexp";
+    private static final String WORD_REGEXP = "wordRegexp";
 
-    static {
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream("src/by/epam/lw03/resources/regexp.properties");
-            regexp.load(fis);
-        } catch (IOException e) {
-            System.err.println("ОШИБКА: Файл свойств отсуствует!");
-        }
-    }
+    private static ResourceBundle regexp = ResourceBundle.getBundle(PATH_TO_RESOURCE);
+
+
+    private TextParser() {}
 
     public static Collection<PartOfText> parseText(File f) throws IOException {
         return parseText(readFile(f.getAbsolutePath(), Charset.forName("UTF-8")));
@@ -43,7 +42,8 @@ public class TextParser {
 
         Collection<PartOfText> partsOfText = new TreeSet<PartOfText>(new SentenceComparator());
 
-        Pattern pattern = Pattern.compile(regexp.getProperty("textRegexp"));
+
+        Pattern pattern = Pattern.compile(regexp.getString(TEXT_REGEXP));
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             String match = matcher.group();
@@ -60,7 +60,7 @@ public class TextParser {
 
         Collection<PartOfSentence> parts = new TreeSet<PartOfSentence>();
 
-        Pattern codePattern = Pattern.compile(regexp.getProperty("codeRegexp"));
+        Pattern codePattern = Pattern.compile(regexp.getString(CODE_REGEXP));
         Matcher codeMatcher = codePattern.matcher(sentence);
         while (codeMatcher.find()) {
             if (codeMatcher.group(1) != null) {
@@ -69,7 +69,7 @@ public class TextParser {
             }
         }
 
-        Pattern wordPattern = Pattern.compile(regexp.getProperty("wordRegexp"));
+        Pattern wordPattern = Pattern.compile(regexp.getString(WORD_REGEXP));
         Matcher wordMatcher = wordPattern.matcher(sentence);
         while (wordMatcher.find()) {
             if (wordMatcher.group(1) != null) {
